@@ -1,0 +1,3 @@
+python-pandas 
+python-yfinance
+python-dotenv

@@ -1,22 +1,14 @@
-import yfinance as yf
-import pandas as pd
+from src.calc_metrics import calc_metric
+from src.pull_stock_details import pull_stock_details
+from config.config import load_env
 
-def pull_top_holdings(etf_symbol):
+etf_ticker = 'H4ZX.DE'
 
-    spy = yf.Ticker(etf_symbol).funds_data
-    df_top = pd.DataFrame(spy.top_holdings)
-    df_top = df_top.reset_index()
-    my_list = df_top.iloc[:, 0].tolist() 
-    return my_list,df_top
+def main(etf_ticker):
+    load_env()
+    stock_data = pull_stock_details(etf_ticker)
+    return stock_data
 
-etf_symbol = 'H4ZX.DE'
-#print(pull_top_holdings(etf_symbol))
+if __name__ == "__main__":
+    print(main(etf_ticker))
 
-
-ticker = yf.Ticker('01211')
-ticker = ticker.info
-df = pd.DataFrame([ticker])
-if df.iloc[:, 0].isna().any():
-    return None
-else:
-    print(df)
