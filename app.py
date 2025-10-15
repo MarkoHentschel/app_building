@@ -10,5 +10,6 @@ def main(etf_ticker):
     return stock_data
 
 if __name__ == "__main__":
-    print(main(etf_ticker))
+    main(etf_ticker)
+
 

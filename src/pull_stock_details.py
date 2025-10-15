@@ -18,11 +18,11 @@ def pull_stock_details(etf_symbol):
         ticker_object = yf.Ticker(ticker)
         df_temp = pd.DataFrame.from_dict(ticker_object.info, orient="index")
         df_temp.reset_index(inplace=True)
-        df_temp.columns=["Attribute","Recent"]
+        df_temp.columns=["Attribute","current_value"]
         ticker_data[ticker] = df_temp
 
     combined_data = pd.concat(ticker_data)
     combined_data = combined_data.reset_index()
     del combined_data["level_1"]
-    combined_data.columns=["Ticker","Attribute","Recent"]
+    combined_data.columns=["ticker","attribute","current_value"]
     return combined_data
