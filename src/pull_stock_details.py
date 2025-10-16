@@ -65,4 +65,4 @@ def pull_stock_details(etf_symbol):
     pivoted_df.columns.name = None  # Remove the 'attribute' name from columns
     pivoted_df[format_attributes] = pivoted_df[format_attributes].astype(float)
 
-    return pivoted_df
+    return pivoted_df,df_top

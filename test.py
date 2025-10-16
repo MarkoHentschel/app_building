@@ -5,7 +5,8 @@ import pandas as pd
 
 etf_ticker = 'H4ZX.DE'
 
-stock_data = pull_stock_details(etf_ticker)
+stock_data = pull_stock_details(etf_ticker)[0]
+df_weight = pull_stock_details(etf_ticker)[1]
 
 #trail_peg = stock_data[stock_data["attribute"]=="trailingPegRatio"].reset_index()
 
@@ -40,5 +41,17 @@ stock_data['composite_score'] = stock_data[norm_cols].mean(axis=1)
 
 # Sort by score if desired
 df_sorted = stock_data.sort_values('composite_score', ascending=False)
+# Example: add a weight column (replace with your real one)
 
-print(stock_data.head())
+# 1. Merge by ticker
+merged = pd.merge(stock_data,df_weight, left_on='ticker', right_on='Symbol', how='inner')
+
+# 2. Normalize weights (optional but recommended)
+merged['weight'] = merged['Holding Percent'] / merged['Holding Percent'].sum()
+
+# 3. Compute weighted score
+overall_score = (merged['composite_score'] * merged['weight']).sum()
+
+
+print(stock_data[['ticker','composite_score']]) # individuell holding scores of the fund
+print(overall_score) # overall score of the ETF based on its top holdings
