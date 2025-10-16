@@ -5,17 +5,6 @@ import pandas as pd
 
 etf_ticker = 'H4ZX.DE'
 
-# map peg ratio to valuation wording
-def classify_value(x):
-    if pd.isna(x):
-        return "unknown" 
-    elif x < 1:
-        return "undervalued"
-    elif 1 <= x < 1.01:
-        return "fairly_valued"    
-    else:
-        return "overvalued"
-
 stock_data = pull_stock_details(etf_ticker)
 
 #trail_peg = stock_data[stock_data["attribute"]=="trailingPegRatio"].reset_index()
@@ -24,14 +13,32 @@ stock_data = pull_stock_details(etf_ticker)
 # Add the "fund" column with a fixed value "test"
 stock_data['fund'] = etf_ticker
 
-# Group by "fund" and calculate the mean of "current_value"
-#rec_mean = rec_mean.groupby('fund')['current_value'].mean()
-#recommendation = recommendation['current_value'].value_counts()
+stock_data['stockprice_potential'] = (stock_data['targetMedianPrice'].fillna(0) -
+                       stock_data['previousClose'].fillna(0))
+
+# Let's assume df is your DataFrame with the 8 columns already present
+
+# Define which features are "lower is better" and which are "higher is better"
+lower_is_better = ['recommendationMean', 'trailingPegRatio', 'trailingPE']
+higher_is_better = ['quickRatio', 'trailingEps', 'revenuePerShare', 'stockprice_potential','profitMargins']
+
+# Normalize all features using min-max scaling
+for col in lower_is_better:
+    min_val, max_val = stock_data[col].min(), stock_data[col].max()
+    stock_data[col + '_norm'] = 1 - (stock_data[col] - min_val) / (max_val - min_val)  # Invert
+    stock_data[col + '_norm'] = stock_data[col + '_norm'].clip(0, 1)  # Optional: keep in bounds
+
+for col in higher_is_better:
+    min_val, max_val = stock_data[col].min(), stock_data[col].max()
+    stock_data[col + '_norm'] = (stock_data[col] - min_val) / (max_val - min_val)
+    stock_data[col + '_norm'] = stock_data[col + '_norm'].clip(0, 1)  # Optional: keep in bounds
+
+# Combine into a single composite score (equal weighting)
+norm_cols = [col + '_norm' for col in lower_is_better + higher_is_better]
+stock_data['composite_score'] = stock_data[norm_cols].mean(axis=1)
 
 
-# Apply transformation
-#trail_peg['valuation'] = trail_peg['current_value'].apply(classify_value)
-#trail_peg = trail_peg['valuation'].value_counts()
+# Sort by score if desired
+df_sorted = stock_data.sort_values('composite_score', ascending=False)
 
 print(stock_data.head())
-
