@@ -4,6 +4,7 @@ import yfinance as yf
 import pandas as pd
 
 pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
 
 def pull_stock_details(etf_symbol):
 
@@ -25,4 +26,43 @@ def pull_stock_details(etf_symbol):
     combined_data = combined_data.reset_index()
     del combined_data["level_1"]
     combined_data.columns=["ticker","attribute","current_value"]
-    return combined_data
+
+
+    wanted_attributes = [
+        'longName'
+        ,'previousClose'
+        ,'targetMedianPrice'
+        ,'profitMargins'
+        ,'debtToEquity'
+        ,'quickRatio'
+        ,'currentRatio'
+        ,'trailingPegRatio'
+        ,'trailingPE'
+        ,'trailingEps'
+        ,'revenuePerShare'
+        ,'recommendationMean'
+        ,'recommendationKey']
+    
+    format_attributes = [
+        'previousClose'
+        ,'targetMedianPrice'
+        ,'profitMargins'
+        ,'debtToEquity'
+        ,'quickRatio'
+        ,'currentRatio'
+        ,'trailingPegRatio'
+        ,'trailingPE'
+        ,'trailingEps'
+        ,'revenuePerShare'
+        ,'recommendationMean']
+    # Step 1: Filter for only the attributes you want
+    filtered_data = combined_data[combined_data['attribute'].isin(wanted_attributes)]
+
+    # Step 2: Pivot the filtered data
+    pivoted_df = filtered_data.pivot(index='ticker', columns='attribute', values='current_value').reset_index()
+
+    # Step 3: Optional cleanup
+    pivoted_df.columns.name = None  # Remove the 'attribute' name from columns
+    pivoted_df[format_attributes] = pivoted_df[format_attributes].astype(float)
+
+    return pivoted_df
